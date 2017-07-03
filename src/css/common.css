@@ -1,0 +1,59 @@
+body .tipspop {
+    border-radius: 3px;
+    background-color: #fff;
+    margin: 0 auto;
+    border: 3px solid #dddddd;
+    padding: 15px;
+}
+body .tipspop .popshow-tips {
+    margin-top: 4px;
+    color: #444;
+    font-size: 14px;
+    line-height: 30px;
+}
+body .tipspop .popshow-tips span {
+    background: url('../img/ico_warn.png') no-repeat -50px -204px;
+    padding: 5px 12px;
+    position: relative;
+    top: 3px;
+}
+body .tipspop .mt10 {
+    margin-top: 10px;
+}
+body .tipspop .tc {
+    text-align: center;
+}
+body .tipspop .btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+body .tipspop .btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 3px;
+}
+body .tipspop .btn-primary {
+    color: #fff;
+    background-color: #226dd4;
+    border-color: #226dd4;
+}
+body .tipspop .btn-default {
+    color: #333333;
+    background-color: #fff;
+    border-color: #ccc;
+}
+body .tipspop .mr10 {
+    margin-right: 10px;
+}
+body .tipspop .mr5 {
+    margin-right: 5px;
+}

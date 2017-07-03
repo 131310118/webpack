@@ -1,0 +1,682 @@
+html {
+    font-size: 62.5%;
+}
+body {
+    width:100%;
+    height:100%;
+    margin: 0;
+    position: relative;
+}
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+.rtb_point {
+    position: relative;
+    min-width: 20rem;
+    max-width: 24rem;
+    box-shadow: 0 0 0.5px rgba(0,0,100,.6);
+    background: #fff;
+    margin-bottom: 31px;
+    border-radius: 2px;
+    text-align: left;
+    border: 1px solid silver;
+}
+.rtb_point_info {
+    padding: 0;
+    position: relative;
+    background-color: #fff;
+    margin: 0.8rem;
+}
+.rtb_point_info_title {
+    line-height: 2.2rem;
+    font-size: 1.4rem;
+    border-bottom: 1px #99adce solid;
+    padding-right: 1.5rem;
+}
+.rtb_point_info_content {
+    padding-top: 0.5rem;
+    overflow: hidden;
+    font-size: 1.2rem;
+    zoom: 1;
+}
+.rtb_point_close {
+    position: absolute;
+    right: 0.3rem;
+    top: 0.3rem;
+    line-height: 1.5rem;
+    font-size: 1.4rem;
+    color: #cfcfcf;
+    cursor: pointer;
+    padding: 0 0.3rem;
+}
+.rtb_point_sharp {
+    position: absolute;
+    bottom: -0.2rem;
+    background-color: #ffffff;
+    left: 50%;
+    border-left: 1px solid silver;
+    border-bottom: 1px solid silver;
+    padding: 0.4rem;
+    transform: rotate(-45deg) translateX(-50%);
+}
+.rtb_point_stop {
+    position: absolute;
+    width: 1.2rem;
+    height: 1.2rem;
+    background: url('../img/way_btn2.png') no-repeat -12px -139px;
+    cursor: pointer;
+}
+.rtb_point_busLine {
+    background-color: transparent;
+    color: #0f89f5;
+    text-decoration: none;
+    cursor: pointer;
+    margin: 0 2px;
+}
+.rtb_marker_info {
+    padding: 0.7rem 1rem;
+    line-height: 1.5rem;
+    position: relative;
+    background-color: #fff;
+    margin-bottom: 0.8rem;
+    min-width: 20rem;
+    max-width: 24rem;
+    box-shadow: 0 0 0.5px rgba(0,0,100,.6);
+    border-radius: 2px;
+    text-align: left;
+    border: 1px solid silver;
+}
+.rtb_marker_sharp {
+    position: absolute;
+    bottom: 0.8rem;
+    background-color: #ffffff;
+    left: 50%;
+    border-left: 1px solid silver;
+    border-bottom: 1px solid silver;
+    padding: 0.4rem;
+    transform: rotate(-45deg) translateX(-50%);
+}
+.rtb_highlight {
+    color: #0f89f5;
+    font-size: 1.2rem;
+}
+.amap-marker-label{
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    background-color: rgb(15, 137, 245)
+}
+.rtb_nearBy_point {
+    padding: 5px;
+    box-shadow: 0 0 0.5px rgba(0,0,100,.6);
+    background: #fff;
+    margin-bottom: 31px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+.rtb_nearBy_point:hover {
+    background: #8c9dff;
+}
+#top_left {
+    position: fixed;
+    top: 3rem;
+    left: 1rem;
+    z-index: 2200;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+#search {
+    position: relative;
+    top: 0;
+    background-color: #fff;
+    z-index: 2200;
+    box-shadow: 0 2px 2px rgba(0,0,0,.15);
+}
+#search_header {
+    height: 100%;
+    line-height: 3rem;
+    margin-left: 3rem;
+}
+#search_header .fa-close {
+    position: absolute;
+    color: #cccccc;
+    font-size: 12px;
+    line-height: 32px;
+    right: 11px;
+    padding: 0 1rem;
+    top: 0;
+    box-sizing: border-box;
+}
+#search_body {
+    position: absolute;
+    top: 100%;
+    width: 100%;
+    left: 0;
+    background-color: #fff;
+    box-shadow: 1px 2px 1px rgba(0,0,0,.15);
+    border-top: 1px solid #E4E6E7;
+    max-height: 40vh;
+    overflow-y: auto;
+}
+#search_keyword {
+    border: none;
+    outline: 0;
+    width: 219px;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+#search_keyword::-webkit-input-placeholder { /* WebKit browsers */
+    color:#c3d8f4;
+}
+#search_keyword:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+    color:#c3d8f4;
+}
+#search_keyword::-moz-placeholder { /* Mozilla Firefox 19+ */
+    color:#c3d8f4;
+}
+#search_keyword:-ms-input-placeholder { /* Internet Explorer 10+ */
+    color:#c3d8f4;
+}
+.hiden {
+    display: none !important;
+}
+.line,.station,.poi,.collectionsListItem {
+    cursor: pointer;
+    padding: 1rem 1rem;
+    border-bottom: 1px solid #dddddd;
+}
+.line:hover,.station:hover,.poi:hover,.collectionsListItem:hover {
+    background-color: #eee;
+}
+#back {
+    position: absolute;
+    padding: 1rem 1rem;
+    background-color: #fff;
+    height: 3rem;
+    width: 3rem;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+#collections {
+    position: fixed;
+    top: 3rem;
+    left: 30rem;
+}
+#collectionHeader {
+    font-weight: 600;
+    padding: 1rem;
+    line-height: 4rem;
+    font-size: 1.3rem;
+    background-color: rgba(255, 246, 158, 0.9);
+    cursor: pointer;
+    border-radius: 33%;
+    user-select: none;
+}
+.collectionsList {
+    background-color: #fff;
+    z-index: 2200;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    max-width: 250px;
+    overflow: hidden;
+}
+#busInfoBox {
+    position: relative;
+    background-color: #f9f9f9;
+    color: #000;
+    border-bottom: 1px solid #ccc;
+    text-align: center;
+}
+#busInfoBox p {
+    margin: 0;
+    padding: 1rem;
+    font-size: 1.8rem;
+}
+
+@media screen and (max-device-width : 768px){
+    #top_left {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 2200;
+        width: 100%;
+    }
+    #back {
+        position: absolute;
+        padding: 1rem 1rem;
+        background-color: #3d92fb;
+        color: #fff;
+        height: 100%;
+        line-height: 1.5rem;
+        width: 3rem;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+    #search {
+        background-color: #fff;
+    //height: 3.5rem;
+        height:42px;
+    }
+    #search_header {
+        height: 100%;
+        margin-left: 3rem;
+        padding-right: 1rem;
+        background-color: #3d92fb;
+    }
+    #search_keyword {
+        /* border: none;
+         outline: 0;
+         width: 100%;
+         font-size: 1.5rem;
+         letter-spacing: 1px;
+         line-height: 2rem;
+         padding: 0 8px;
+         margin: 0.75rem 0;
+         box-sizing: border-box;
+         background-color: #357fdb;
+         color: #fff;
+         border-radius: 5px;*/
+        border: none;
+        outline: 0;
+        font-size: 12px;
+        letter-spacing: 1px;
+        padding: 0 8px 0 37px;
+        border-radius: 14px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+    #footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+    }
+    #footer #radius {
+        position: absolute;
+        right: 0;
+        transform: translateY(-100%);
+        top: -10px;
+    }
+    #footer #radius:after{
+        clear:both;
+        display:block;
+        content: ' ';
+    }
+    #footer #radius li{
+        float: right;
+        padding: 4px 6px;
+        background-color: #3d92fb;
+        color:#fff;
+        margin-right: 10px;
+    }
+    #footer #radius li.active {
+        background-color: #f34234;
+    }
+    #footer #collections {
+        position: absolute;
+        left: 60px;
+        transform: translateY(-100%);
+        color: #fff;
+        background-color: #3d92fb;
+        padding: 4px 6px;
+        top: 0;
+    }
+    #footer #collections .fa-star {
+        color: #f34234;
+    }
+    .collectionsList {
+        position: absolute;
+        top: 0;
+        transform: translateY(-100%);
+        color: #000;
+        left: 0;
+        min-width: 100%;
+        background-color: #fff;
+        border: 1px solid #cccccc;
+        box-sizing: border-box;
+    }
+    .collectionsList .collectionsListItem {
+        padding: 7px 6px;
+        border-bottom: 1px solid #dddddd;
+    }
+    #footer #stationLines,.less #footer #stationLines{
+        /* margin: 10px 0 0 0;
+         padding: 18px 10px;
+         font-size: 1.5rem;
+         background-color: #fff;
+         color: #999;
+         webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+         box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+         overflow-y: auto;
+         max-height: 60vh;*/
+        padding: 0 10px;
+        font-size: 1.5rem;
+        color: #999;
+        overflow-y: auto;
+        max-height: 60vh;
+        position: relative;
+    }
+    .more #stationLines{
+        max-height: 212px;
+        overflow-y: auto;
+    }
+    #footer #stationLines > li{
+        text-decoration: none;
+        color: #999;
+        font-size: 1.5rem;
+        position: relative;
+    }
+    #footer #stationLines > li .star{
+        position: absolute;
+        top: 10px;
+        right: 0;
+    }
+    #footer #stationLines > li .fa-star{
+    //color: #f34234;
+        color: #fcd94c;
+    }
+    #footer #stationLines > li > div{
+        padding: 6px 0;
+    }
+    #footer #stationLines .footer_time {
+        display: inline-block;
+        width: 35%;
+        max-width: 35%;
+        overflow: hidden;
+        word-wrap: break-word;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    #footer .footer_bus {
+        width: 65%;
+        padding-right: 10px;
+        -webkit-box-sizing: border-box;
+        display: inline-block;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        word-break: break-all;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        float:left;
+    }
+    #footer .footer_busName {
+        font-size: 1.6rem;
+        padding-right: 10px;
+        display: inline-block;
+        min-width: 44px;
+    }
+    #footer #control {
+        text-align: center;
+        background-color: #fff;
+        padding: 0 10px;
+        display: none;
+    }
+    #footer .footer-stationLines.more + #control, #footer .footer-stationLines.less + #control{
+        display: block;
+        font-size: 22px;
+        color: #828282;
+        line-height: 18px;
+    }
+    #footer .footer-stationLines.hiden + #control{
+        display: none;
+    }
+    #footer .footer-stationLines.more  + #control > .less{
+        display: none;
+    }
+    #footer .footer-stationLines.less  + #control > .more{
+        display: none;
+    }
+    #footer #realTimeStation {
+        margin: 10px 10px 0;
+        padding: 0 10px;
+        font-size: 1.5rem;
+        background-color: #fff;
+        color: #999;
+        webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        overflow-y: auto;
+        max-height: 60vh;
+    }
+    #footer #realTimeStationHeader {
+        padding: 10px 0;
+        border-bottom: 1px solid #999;
+    }
+    #footer #realTimeStationHeaderName {
+        float: left;
+        height: 4rem;
+        line-height: 4rem;
+        text-align: center;
+        width: 85px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    #footer #busInfo {
+        padding-left: 85px;
+        line-height: 2rem;
+    }
+    #footer #busInfo:after {
+        clear: both;
+        display: block;
+        content: '';
+    }
+    #footer #busInfo .from{
+        background-color: #0091ff;
+        border-radius: 3px;
+        color: #fff;
+    }
+    #footer #busInfo .to{
+        background-color: #ff6854;
+        border-radius: 3px;
+        color: #fff;
+    }
+    #footer #busInfo .busInfo_50 {
+        width: 50%;
+        float: left;
+        white-space: nowrap;
+        padding-left: 5px;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    #footer #busInfo .busInfo_33 {
+        width: 33.3333%;
+        float: left;
+        white-space: nowrap;
+        padding-left: 5px;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    #footer #stationNav {
+        display: flex;
+        text-align: center;
+    }
+    #footer #stationNav div{
+        flex-grow: 1;
+        padding: 3px;
+    }
+    #footer #realTimeInfo {
+        padding: 10px 0 10px 85px;
+        position: relative;
+    }
+    #footer #stationLines li > .footer_busName {
+        color: #000;
+        padding: 10px 0;
+    }
+    #footer .footer_busName > span, #footer .footer_busName .fa-exchange {
+        padding-right: 6px;
+    }
+    #footer .footer_busInfo > span {
+        float: right;
+        padding-left: 10px;
+        font-size: small;
+    }
+    #footer .footer_busInfo .from {
+        background-color: #47c22a;
+        border-radius: 3px;
+        color: #fff;
+        margin-right: 6px;
+    }
+    #footer .footer_busInfo .to {
+        background-color: #fd4848;
+        border-radius: 3px;
+        color: #fff;
+        margin-right: 6px;
+    }
+    #footer .fa-bus {
+        font-size: 20px;
+        color: #3d92fb;
+        padding-right: 6px;
+    }
+    #footer .fa-angle-down,#footer .fa-angle-up{
+        font-size: 20px;
+        float: right;
+    }
+    .stationsBox ul{
+        display: flex;
+        width: 100%;
+        overflow-y: auto;
+        flex-wrap: nowrap;
+        padding-top: 10px;
+    }
+    .stationsBox li {
+        font-size: 15px;
+        max-width: 15px;
+        position: relative;
+        padding: 0 20px;
+    }
+    .stationsBox li i{
+        position: relative;
+        width: 12px;
+        height: 12px;
+        display: inline-block;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 1px solid #3d92fb;
+    }
+    .stationsBox li i.active:before{
+        position: absolute;
+        content: '';
+        padding: 4px;
+        border-radius: 50%;
+        background-color: #3d92fb;
+        left:50%;
+        top:50%;
+        transform: translate(-50%,-50%);
+    }
+    .stationsBox li:before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 8px;
+        top: 5px;
+        left: -5px;
+        background-color: #999;
+    }
+    .stationsBox li.bus:after {
+        content: '';
+        position: absolute;
+        top: -10px;
+        background-image: url(../img/bus.png);
+        left: -3px;
+        height: 12px;
+        width: 19px;
+        background-size: cover;
+    }
+    .fa-circle.active {
+        color: #3d92fb;
+        position: relative;
+    }
+    .top_left-collection {
+        width: 3em;
+        display: inline-block;
+        background-color: #fff;
+        position: absolute;
+        padding: 3px 5px;
+        bottom: -9px;
+        transform: translate(11px,100%);
+        box-shadow: 0 0 4px rgba(0,0,100,.6);
+    }
+    .top_left-collection .fa {
+        display: block;
+        text-align: center;
+        color: #fcd94c;
+        font-size: 2.5em;
+    }
+    .top_left-collection .collectionsList {
+        position: absolute;
+        top: 100%;
+        color: #000;
+        left: -1px;
+        display: inline-block;
+        min-width: 200%;
+        background-color: #fff;
+        border: 1px solid #cccccc;
+        box-sizing: border-box;
+        transform: translateY(5px);
+        overflow: visible;
+    }
+    .top_left-collection .collectionsList:before {
+        content: '';
+        display: inline-block;
+        border: 5px solid transparent;
+        border-bottom-color: #cccccc;
+        position: absolute;
+        top: -11px;
+        left: 15px;
+    }
+    #search_header {
+        height: 100%;
+        margin-left: 0;
+        background-color: #fff;
+        padding-right: 13px;
+        display: flex;
+        align-items: center;
+    }
+    #search_header:before {
+        content: "\f002";
+        position: absolute;
+        left: 27px;
+        line-height: 42px;
+        color: #cccccc;
+        z-index: 1;
+    }
+    .search_header-buttom {
+        width: 65px;
+        height: 29px;
+        display: inline-block;
+        text-align: center;
+        line-height: 29px;
+        background-color: #39b8ef;
+        color: #fff;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+    }
+    .footer-stationLines {
+        padding: 14px 0;
+        background-color: #fff;
+        -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+    .footer-stationLines.less {
+        display: none;
+    }
+    .search_header-content {
+        flex-grow: 1;
+        position: relative;
+        margin: 5px 12px;
+        border: 1px solid #39b8ef;
+        border-radius: 14px;
+        height: 30px;
+        line-height: 32px;
+    }
+    #footer .stationLines-red {
+        color: #f34234;
+    }
+}
