@@ -18,7 +18,7 @@ document.documentElement.style.fontSize = document.documentElement.clientWidth /
 export default class RealBus extends Component {
     constructor() {
         super();
-        gd.geolocation((geolocation) => {
+        gd.geolocation.then((geolocation) => {
             gd.map.addControl(geolocation);
             geolocation.getCurrentPosition();
             AMap.event.addListener(geolocation, 'complete', this.onComplete);

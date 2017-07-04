@@ -1,0 +1,52 @@
+.stationName {
+  line-height: 1.36rem;
+  font-size: 18px;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #ccc;
+}
+.collection {
+  position: relative;
+  left: 11px;
+  top: 9px;
+  width: 1rem;
+  padding: 3px 5px;
+  display: inline-block;
+  font-size: 12px;
+  box-shadow: 0 0 4px rgba(0,0,100,.6);
+  background-color: #fff;
+  cursor: pointer;
+  .fa-star {
+    display: block;
+    text-align: center;
+    color: #fcd94c;
+    font-size: 0.83rem;
+  }
+  .collectionList {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    min-width: 1.28rem;
+    max-width: 3rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    transform: translateY(5px);
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    &:before {
+      content: '';
+      display: inline-block;
+      border: 5px solid transparent;
+      border-bottom-color: #cccccc;
+      position: absolute;
+      top: -11px;
+      left: 15px;
+    }
+  }
+  .collectionListItem {
+    padding: 7px 6px;
+    border-bottom: 1px solid #dddddd;
+  }
+}

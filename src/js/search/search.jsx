@@ -8,107 +8,90 @@ export default class Search extends Component {
             searchHiden: this.props.searchHiden === false ? false : true,
             searchContent: this.props.searchContent ? this.props.searchContent : "",
             searchResult: this.props.searchResult ? this.props.searchResult : [],
-            resultHiden: this.props.resultHiden === false ? false : true,
-            searchListory: (() => {
-                var search = [];
-                if(window.localStorage) {
-                    if(localStorage.search) {
-                        search = JSON.parse(localStorage.search);
-                    }
-                }
-                return search;
-            })()
+            resultHiden: this.props.resultHiden === false ? false : true
         };
+        this.searchHistory = (() => {
+            var search = [];
+            if(window.localStorage) {
+                if(localStorage.search) {
+                    search = JSON.parse(localStorage.search);
+                }
+            }
+            return search;
+        })()
     }
     hideClickHandle = (e) => {
         "use strict";
         this.setState({
             searchContent: "",
             searchHiden: true,
-            resultHiden: true
-        })
+            resultHiden: false,
+            searchResult: this.searchHistory
+        });
+        this.refs.searchKeyword.focus();
     };
     searchInputHandle = (() => {
         "use strict";
         var time;
-        var bus;
         var resultCache = {};
-        var searchInputUpdate = () => {
+        var search = () => {
+            var value = this.state.searchContent;
+            let resultHandle = (result) => {
+                resultCache[value] = resultCache[value] ? resultCache[value].concat(result) : result;
+                if(value == this.state.searchContent) {
+                    this.setState({
+                        resultHiden: false,
+                        searchResult: resultCache[value]
+                    });
+                }
+            };
+            if(resultCache[value]) {
+                this.setState({
+                    resultHiden: false,
+                    searchResult: resultCache[value]
+                });
+            } else {
+                this.props.gd.lineSearch(value, 50).then((result) => {
+                    resultHandle.bind(this)(result);
+                },() => {});
+                this.props.gd.stationSearch(value, 50).then((result) => {
+                    resultHandle.bind(this)(result);
+                },() => {});
+                this.props.gd.poisSearch(value, 50).then((result) => {
+                    resultHandle.bind(this)(result);
+                },() => {});
+            }
+        };
+        return () => {
             let value = this.refs.searchKeyword.value.trim();
             if(value) {
-                bus = value;
                 this.setState({
                     searchContent: value,
                     searchHiden: false,
                     resultHiden: false
                 });
-                if(resultCache[value]) {
-                    this.setState({
-                        searchResult: resultCache[value],
-                        resultHiden: false
-                    });
-                } else {
-                    this.props.gd.lineSearch(value, 50).then(({result, preBus}) => {
-                        resultCache[preBus] = resultCache[preBus] ? resultCache[preBus].concat(result) : result;
-                        if(preBus == bus) {
-                            this.setState({
-                                searchResult: resultCache[preBus],
-                                resultHiden: false
-                            });
-                        }
-                    });
-                }
-                this.props.gd.stationSearch((stationSearch) => {
-                     stationSearch.search(value, (status, result) => {
-                         if(status === "complete" && result .info === 'OK') {
-                             var stationInfo = [];
-                             result.stationInfo.forEach((s) => {
-                                 if(/\(公交站\)$/.test(s.name)) {
-                                     s.location = s.location.getLng() + ',' + s.location.getLat();
-                                     s.address = (() => {
-                                         var arr = [];
-                                         s.buslines.forEach((line) => {
-                                             arr.push(line.name.replace(/\(.*\)/, ''));
-                                         });
-                                         return arr.join(';');
-                                     })();
-                                     s.className = "fa-bus";
-                                     stationInfo.push(s);
-                                 }
-                             });
-                             resultCache[value] = resultCache[value] ? resultCache[value].concat(result.stationInfo) : result.stationInfo;
-                             if(value == this.refs.searchKeyword.value.trim()) {
-                                 this.setState({
-                                     searchResult: resultCache[value],
-                                     resultHiden: false
-                                 });
-                             }
-                         }
-                     })
-                 })
+                clearTimeout(time);
+                time = setTimeout(search.bind(this), 150);
             } else {
                 this.setState({
                     searchContent: "",
                     searchHiden: true,
-                    resultHiden: true
+                    resultHiden: true,
+                    searchResult: this.searchHistory
                 })
             }
         };
-        return () => {
-            var now = +new Date();
-            if(time) {
-                if(now - time < 150) {
-                    return;
-                } else {
-                    time = now;
-                    searchInputUpdate.bind(this)();
-                }
-            } else {
-                time = now;
-                searchInputUpdate.bind(this)();
-            }
-        }
     })();
+    searchFocusHandle =() => {
+        "use strict";
+        if(!this.state.searchContent) {
+            this.setState({
+                searchHiden: true,
+                resultHiden: false,
+                searchResult: this.searchHistory
+            })
+        }
+    };
     searchClickHandle = () => {
         "use strict";
         this.searchInputHandle();
@@ -117,14 +100,34 @@ export default class Search extends Component {
         "use strict";
         e = e || window.event;
         if(window.localStorage) {
-            this.state.searchListory.unshift({
-                extData: dom.extData,
-                title: dom.title
+            var data = this.state.searchResult[e.target.getAttribute('data-index')];
+            var index = this.searchHistory.findIndex((item) => {
+                return item.name == data.name;
             });
-            localStorage.search = JSON.stringify(obj.search.searchListory);
+            if(index != -1) {
+                this.searchHistory.splice(index, 1);
+            }
+            this.searchHistory.unshift(data);
+            this.searchHistory.length = this.searchHistory.length > 5 ? 5 : this.searchHistory.length;
+            localStorage.search = JSON.stringify(this.searchHistory);
+            var type = data.className;
+            this.props.gd.draw(data, type);
+            switch(type) {
+                case 'fa-random':
+                    this.props.hideStation();
+                    break;
+                case 'fa-bus':
+                    this.props.hideStation();
+                    break;
+                case 'fa-bullseye':
+                    this.props.showStation(data.name);
+                    break;
+            }
         }
         this.setState({
-            searchHiden: true
+            searchContent: data.name,
+            searchHiden: false,
+            resultHiden: true
         })
     };
     render() {
@@ -138,14 +141,14 @@ export default class Search extends Component {
                 <div className="searchInput">
                     <div className="searchValue">
                         <i className="fa fa-search"></i>
-                        <input type="text" placeholder="搜索公交线路/公交站点/地名" ref="searchKeyword"
+                        <input type="text" placeholder="搜索公交线路/公交站点/地名" ref="searchKeyword" onFocus={this.searchFocusHandle}
                                onInput={this.searchInputHandle} value={this.state.searchContent} className="searchKeyword"/>
                         <i className={searchHidenIcon} onClick={this.hideClickHandle}></i>
                     </div>
                     <span onClick={this.searchClickHandle} className="searchButtom">搜索</span>
                 </div>
-                <div className={searchResult} onClick={this.resultClickHandle}>{this.state.searchResult.map((bus) => {
-                    return <div className="item" title={bus.name} data-info={bus}><i className={"fa " + bus.className}></i>{bus.name}</div>
+                <div className={searchResult} onClick={this.resultClickHandle}>{this.state.searchResult.map((bus, index) => {
+                    return <div className="item" title={bus.name} data-index={index} key={index}><i className={"fa " + bus.className}></i>{bus.name}</div>
                 })}</div>
             </div>
         )

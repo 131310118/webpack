@@ -1,5 +1,7 @@
 .search {
   background-color: #fff;
+  position: relative;
+  box-shadow: 0 2px 2px rgba(0,0,0,.15);
 }
 .searchInput {
   display: flex;
@@ -27,6 +29,7 @@
     .searchKeyword {
       border: 1px solid #39b8ef;
       padding-left: 1rem;
+      padding-right: 1rem;
       width: 100%;
       outline: none;
       height: 0.8rem;
@@ -38,6 +41,8 @@
   .searchButtom {
     width: 1.8rem;
     height: 0.8rem;
+    font-size: 12px;
+    cursor: pointer;
     text-align: center;
     background-color: #39b8ef;
     color: #fff;
@@ -48,6 +53,11 @@
   font-size: 12px;
   max-height: 6.84rem;
   overflow-y: auto;
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  z-index: 1;
   .item {
     cursor: pointer;
     height: 1.14rem;
