@@ -143,7 +143,7 @@ export default class RealBus extends Component {
                                 }
                                 result.lineInfo.forEach((line) => {
                                     var name = line.name.match(/^([^(]+)/)[0];
-                                    that.cache.busline[name] = that.cache.busline[name] ? that.cache.busline[name].push(line) : [line];
+                                    that.cache.busline[name] ? that.cache.busline[name].push(line) : that.cache.busline[name] = [line];
                                 });
                                 resolve(result.lineInfo)
                             } else {
@@ -466,9 +466,9 @@ export default class RealBus extends Component {
                 if(that.lineName && that.cache.busline[that.lineName] && that.cache.busline[that.lineName].length > 1) {
                     for(let data of that.cache.busline[that.lineName]) {
                         if(data.id != that.id) {
-                            var type = 'fa-random';
+                            let type = 'fa-random';
                             that.handle.mergeLineInfo(data, type).then((result) => {
-                                this.props.gd.UI.draw(result, type, data);
+                                gd.UI.draw(result, type, data);
                             });
                             break;
                         }

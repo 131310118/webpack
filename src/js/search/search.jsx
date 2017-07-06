@@ -13,12 +13,20 @@ export default class Search extends Component {
         };
         this.searchHistory = (() => {
             var search = [];
+            var searchArr = [];
             if(window.localStorage) {
                 if(localStorage.search) {
                     search = JSON.parse(localStorage.search);
                 }
             }
-            return search;
+            search.map(item => {
+                "use strict";
+                searchArr.push(item);
+            });
+            return {
+                objArr: search,
+                arr: searchArr
+            }
         })();
     }
     hideClickHandle = (e) => {
@@ -27,7 +35,7 @@ export default class Search extends Component {
             searchContent: "",
             searchHiden: true,
             resultHiden: false,
-            searchResult: this.searchHistory
+            searchResult: this.searchHistory.arr
         });
         this.refs.searchKeyword.focus();
     };
@@ -100,7 +108,7 @@ export default class Search extends Component {
                     searchContent: "",
                     searchHiden: true,
                     resultHiden: true,
-                    searchResult: this.searchHistory
+                    searchResult: this.searchHistory.arr
                 })
             }
         };
@@ -111,7 +119,7 @@ export default class Search extends Component {
             this.setState({
                 searchHiden: true,
                 resultHiden: false,
-                searchResult: this.searchHistory
+                searchResult: this.searchHistory.arr
             })
         }
     };
@@ -124,11 +132,12 @@ export default class Search extends Component {
         e = e || window.event;
         if(window.localStorage) {
             var data = this.state.searchResult[e.target.getAttribute('data-index')];
-            var index = this.searchHistory.findIndex((item) => {
+            var index = this.searchHistory.objArr.findIndex((item) => {
                 return item.data.name == data.name;
             });
             if(index != -1) {
-                this.searchHistory.splice(index, 1);
+                this.searchHistory.objArr.splice(index, 1);
+                this.searchHistory.arr.splice(index, 1);
             }
             let name = data.name.match(/^([^(]+)/)[0];
             let other = undefined;
@@ -139,9 +148,10 @@ export default class Search extends Component {
                     }
                 }
             }
-            this.searchHistory.unshift({data: data, other: d});
-            this.searchHistory.length = this.searchHistory.length > 5 ? 5 : this.searchHistory.length;
-            localStorage.search = JSON.stringify(this.searchHistory);
+            this.searchHistory.objArr.unshift({data: data, other: other});
+            this.searchHistory.arr.unshift(data);
+            this.searchHistory.objArr.length = this.searchHistory.objArr.length > 5 ? 5 : this.searchHistory.objArr.length;
+            localStorage.search = JSON.stringify(this.searchHistory.objArr);
             var type = data.className;
             this.props.handle.mergeLineInfo(data, type).then((result) => {
                 this.props.gd.UI.draw(result, type, data);
