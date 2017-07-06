@@ -10,15 +10,6 @@ export default class Header extends Component {
         this.state = {
             stationName: this.props.stationName || "",
             stationHiden: this.props.stationHiden === false ? false : true,
-            collectionContent: this.props.collection || (() => {
-                var collections = [];
-                if(window.localStorage) {
-                    if(localStorage.collections) {
-                        collections = JSON.parse(localStorage.collections);
-                    }
-                }
-                return collections;
-            })(),
             collectionHiden: this.props.collectionHiden === false ? false : true
         }
     }
@@ -49,12 +40,12 @@ export default class Header extends Component {
         collectionList += this.state.collectionHiden ? " hiden" : "";
         return (
             <div className="header">
-                <Search gd={this.props.gd} showStation={this.showStation.bind(this)} hideStation={this.hideStation.bind(this)}/>
+                <Search gd={this.props.gd} showStation={this.showStation.bind(this)} hideStation={this.hideStation.bind(this)} handle={this.props.handle} cache={this.props.cache}/>
                 <div className={stationName}>{this.state.stationName}</div>
                 <span className="collection" onClick={this.toggleCollection}>
                     <i className="fa fa-star"></i>
                     收藏夹
-                    <ul className={collectionList}>{this.state.collectionContent.length ? this.state.collectionContent.map((item, index) => {
+                    <ul className={collectionList}>{this.props.collectionContent.length ? this.props.collectionContent.map((item, index) => {
                         return <li key={index} className="collectionListItem">item.name</li>
                     }) : <li className="collectionListItem">空</li>}</ul>
                 </span>

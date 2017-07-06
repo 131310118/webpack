@@ -4,6 +4,7 @@ import "./search.scss"
 export default class Search extends Component {
     constructor(props){
         super(props);
+        console.log('search');
         this.state = {
             searchHiden: this.props.searchHiden === false ? false : true,
             searchContent: this.props.searchContent ? this.props.searchContent : "",
@@ -18,7 +19,7 @@ export default class Search extends Component {
                 }
             }
             return search;
-        })()
+        })();
     }
     hideClickHandle = (e) => {
         "use strict";
@@ -34,10 +35,11 @@ export default class Search extends Component {
         "use strict";
         var time;
         var resultCache = {};
+        var that = this;
         var search = () => {
             var value = this.state.searchContent;
             let resultHandle = (result) => {
-                resultCache[value] = resultCache[value] ? resultCache[value].concat(result) : result;
+                resultCache[value] = result;
                 if(value == this.state.searchContent) {
                     this.setState({
                         resultHiden: false,
@@ -51,15 +53,36 @@ export default class Search extends Component {
                     searchResult: resultCache[value]
                 });
             } else {
+                var resultSort = (() => {
+                    var resultBySort = [];
+                    var resultSortEnd = [];
+                    var currentWeight = 0;
+                    return (result, weight) => {
+                        resultBySort[weight] = result;
+                        if(currentWeight >= weight) {
+                            resultSortEnd = resultSortEnd.concat(result);
+                            while(resultBySort[++currentWeight]){
+                                resultSortEnd = resultSortEnd.concat(resultBySort[currentWeight])
+                            }
+                            resultHandle.bind(that)(resultSortEnd);
+                        }
+                    }
+                })();
                 this.props.gd.lineSearch(value, 50).then((result) => {
-                    resultHandle.bind(this)(result);
-                },() => {});
+                    resultSort(result, 0);
+                },() => {
+                    resultSort([], 0);
+                });
                 this.props.gd.stationSearch(value, 50).then((result) => {
-                    resultHandle.bind(this)(result);
-                },() => {});
+                    resultSort(result, 1);
+                },() => {
+                    resultSort([], 1);
+                });
                 this.props.gd.poisSearch(value, 50).then((result) => {
-                    resultHandle.bind(this)(result);
-                },() => {});
+                    resultSort(result, 2);
+                },() => {
+                    resultSort([], 2);
+                });
             }
         };
         return () => {
@@ -102,27 +125,41 @@ export default class Search extends Component {
         if(window.localStorage) {
             var data = this.state.searchResult[e.target.getAttribute('data-index')];
             var index = this.searchHistory.findIndex((item) => {
-                return item.name == data.name;
+                return item.data.name == data.name;
             });
             if(index != -1) {
                 this.searchHistory.splice(index, 1);
             }
-            this.searchHistory.unshift(data);
+            let name = data.name.match(/^([^(]+)/)[0];
+            let other = undefined;
+            if(this.props.cache.busline[name] && this.props.cache.busline[name].length > 1) {
+                for(let d of this.props.cache.busline[name]) {
+                    if(d.id != data.id) {
+                        other = d;
+                    }
+                }
+            }
+            this.searchHistory.unshift({data: data, other: d});
             this.searchHistory.length = this.searchHistory.length > 5 ? 5 : this.searchHistory.length;
             localStorage.search = JSON.stringify(this.searchHistory);
             var type = data.className;
-            this.props.gd.draw(data, type);
-            switch(type) {
-                case 'fa-random':
-                    this.props.hideStation();
-                    break;
-                case 'fa-bus':
-                    this.props.hideStation();
-                    break;
-                case 'fa-bullseye':
-                    this.props.showStation(data.name);
-                    break;
-            }
+            this.props.handle.mergeLineInfo(data, type).then((result) => {
+                this.props.gd.UI.draw(result, type, data);
+                switch(type) {
+                    case 'fa-random':
+                        this.props.hideStation();
+                        this.props.handle.lineChangeHandle(result, data);
+                        break;
+                    case 'fa-bus':
+                        this.props.hideStation();
+                        this.props.handle.stationChangeHandle(result, data);
+                        break;
+                    case 'fa-bullseye':
+                        this.props.showStation(data.name);
+                        this.props.handle.poisChangeHandle(result, data);
+                        break;
+                }
+            });
         }
         this.setState({
             searchContent: data.name,

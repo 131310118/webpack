@@ -1,3 +1,9 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
 .stationName {
   line-height: 1.36rem;
   font-size: 18px;
@@ -10,6 +16,7 @@
   left: 11px;
   top: 9px;
   width: 1rem;
+  min-width: 36px;
   padding: 3px 5px;
   display: inline-block;
   font-size: 12px;
