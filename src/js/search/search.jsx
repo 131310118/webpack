@@ -21,7 +21,7 @@ export default class Search extends Component {
             }
             search.map(item => {
                 "use strict";
-                searchArr.push(item);
+                searchArr.push(item.data);
             });
             return {
                 objArr: search,
@@ -132,8 +132,8 @@ export default class Search extends Component {
         e = e || window.event;
         if(window.localStorage) {
             var data = this.state.searchResult[e.target.getAttribute('data-index')];
-            var index = this.searchHistory.objArr.findIndex((item) => {
-                return item.data.name == data.name;
+            var index = this.searchHistory.arr.findIndex((item) => {
+                return item.id == data.id;
             });
             if(index != -1) {
                 this.searchHistory.objArr.splice(index, 1);
@@ -151,6 +151,7 @@ export default class Search extends Component {
             this.searchHistory.objArr.unshift({data: data, other: other});
             this.searchHistory.arr.unshift(data);
             this.searchHistory.objArr.length = this.searchHistory.objArr.length > 5 ? 5 : this.searchHistory.objArr.length;
+            this.searchHistory.arr.length = this.searchHistory.arr.length > 5 ? 5 : this.searchHistory.arr.length;
             localStorage.search = JSON.stringify(this.searchHistory.objArr);
             var type = data.className;
             this.props.handle.mergeLineInfo(data, type).then((result) => {

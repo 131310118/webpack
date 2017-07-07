@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {REALBUSICONDOWN, REALBUSICONUP} from '../variables.js';
 require('./footer.scss');
 
 export default class Footer extends Component {
@@ -9,12 +10,27 @@ export default class Footer extends Component {
             radius: this.props.radius || 500
         }
     };
+    componentDidUpdate() {
+        this.props.handle.judgePosition.setPosition(this.refs.footer.clientHeight + 10 + 'px');
+    };
+    realTimeBusUpdate(index) {
+        "use strict";
+        return () => {
+            this.props.handle.realTimeBusInfoIconUpdate(index);
+        }
+    };
+    stopClickHandle(index, stopId) {
+        "use strict";
+        return () => {
+            this.props.handle.realTimeBusInfoStopAtUpdate(index, stopId);
+        }
+    }
     render() {
         "use strict";
         var realTimeBus = 'realTimeBus';
         realTimeBus += this.props.realTimeBusHiden ? ' hiden' : '';
         return (
-            <div className="footer">
+            <div className="footer" ref="footer">
                 <ul className="radius">
                     {[{value: 1500, name: '1.5km'},{value: 1000, name: '1km'},{value: 500, name: '500m'}].map((radius, index) => {
                         return radius.value == this.state.radius ? <li value={radius.value} className="active" key={index}>{radius.name}</li> :
@@ -46,8 +62,20 @@ export default class Footer extends Component {
                                         <div className="realTimeBusInfo">
                                             <i className={item.realTimeBusStatus}></i>
                                             <span className="realTimeBusMsg">{item.realTimeBusMsg}</span>
-                                            <i className={item.realTimeBusInfoIcon}></i>
+                                            <i className={item.realTimeBusInfoIcon} onClick={this.realTimeBusUpdate(index)}></i>
                                         </div>
+                                        <ul className={item.realTimeBusInfoIcon == REALBUSICONDOWN ? "realTimeBusStops hiden" : "realTimeBusStops"}>
+                                            {
+                                                item.via_stops.map((stop, stopIndex) => {
+                                                    return (
+                                                        <li key={stopIndex} className="realTimeBusStop" onClick={this.stopClickHandle(index, stop.id)}>
+                                                            <i className={item.stopAt === stop.id ? "circle active" : "circle"}></i>
+                                                            <span>{stop.name}</span>
+                                                        </li>
+                                                    )
+                                                })
+                                            }
+                                        </ul>
                                     </li>
                                 )
                             })

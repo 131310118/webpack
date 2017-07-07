@@ -12,6 +12,7 @@ import Header from './header/header.jsx';
 import Footer from './footer/footer.jsx';
 import startIcon from '../img/start.png';
 import endIcon from '../img/end.png';
+import {CITY, PAGEINDEX, PAGESIZE, BUSTYPE, STATIONTYPE, POISTYPE, REALBUSICONDOWN, REALBUSICONUP} from './variables.js';
 
 require('../css/font-awesome.min.css');
 var scale = 1 / devicePixelRatio;
@@ -19,35 +20,11 @@ document.querySelector('meta[name="viewport"]').setAttribute('content','initial-
     'maximum-scale=' + scale + ', minimum-scale=' + scale + ', user-scalable=no');
 document.documentElement.style.fontSize = document.documentElement.clientWidth / 10 + 'px';
 
+
 export default class RealBus extends Component {
     constructor() {
         super();
         console.log('realBus');
-        const CITY = 'shanghai',
-            PAGEINDEX = 1,
-            PAGESIZE = 60;
-
-        this.state = {
-            realTimeBus: [],
-            realTimeBusHiden: true,
-            collectionContent: (() => {
-                var collections = [];
-                if(window.localStorage) {
-                    if(localStorage.collections) {
-                        collections = JSON.parse(localStorage.collections);
-                    }
-                }
-                return collections;
-            })()
-        };
-        this.cache = {
-            busline: {}
-        };
-
-        this.id = undefined;
-        this.stopName = undefined;
-        this.stationName = undefined;
-        this.lineName = undefined;
 
         var that = this;
         var gd = {
@@ -76,6 +53,7 @@ export default class RealBus extends Component {
             startGeolocation: () => {
                 gd.geolocation && gd.geolocation.then((geolocation) => {
                     gd.map.addControl(geolocation);
+                    that.handle.judgePosition.setMap(document.getElementsByClassName('amap-geolocation-con')[0]);
                     geolocation.getCurrentPosition();
                     AMap.event.addListener(geolocation, 'complete', that.onComplete);
                     AMap.event.addListener(geolocation, 'error', that.onError);
@@ -109,7 +87,7 @@ export default class RealBus extends Component {
                                             });
                                             return arr.join(';')
                                         }();
-                                        s.className = 'fa-bus';
+                                        s.className = STATIONTYPE;
                                         stationInfo.push(s);
                                     }
                                 });
@@ -138,12 +116,12 @@ export default class RealBus extends Component {
                                     if(flter.indexOf(result.lineInfo[l].type) == -1) {
                                         result.lineInfo.splice(l, 1);
                                     } else {
-                                        result.lineInfo[l].className = 'fa-random';
+                                        result.lineInfo[l].className = BUSTYPE;
                                     }
                                 }
                                 result.lineInfo.forEach((line) => {
                                     var name = line.name.match(/^([^(]+)/)[0];
-                                    that.cache.busline[name] ? that.cache.busline[name].push(line) : that.cache.busline[name] = [line];
+                                    that.cache.busline[name] ? (that.cache.busline[name].some((item) => {return item.id == line.id}) ? "" : that.cache.busline[name].push(line)) : that.cache.busline[name] = [line];
                                 });
                                 resolve(result.lineInfo)
                             } else {
@@ -193,12 +171,11 @@ export default class RealBus extends Component {
                 var pois;
                 return {
                     draw: (stop, type, data) => {
+                        that.data = data;
                         switch (type) {
-                            case 'fa-random':
+                            case BUSTYPE:
                                 gd.UI.hideStation();
                                 gd.UI.hidePois();
-                                that.lineName = data.name.match(/^([^(]+)/)[0];
-                                that.id = data.id;
                                 //绘图--start
                                 if(stop[0] && start) {
                                     start.setPosition(new AMap.LngLat(stop[0].location.lng, stop[0].location.lat));
@@ -300,28 +277,27 @@ export default class RealBus extends Component {
                                 }
                                 //绘图--end
                                 if(start.getExtData().info.name === that.stopName) {
-                                        this.linesearchInfo.start.emit('click', {
-                                            target: start
-                                        })
-                                    } else if(end.getExtData().info.name === that.stopName) {
-                                        end.emit('click', {
-                                            target: end
-                                        })
-                                    } else {
-                                        for(let a = stop.length - 2, p = 0; p < a; p++) {
-                                            if(markers[p].getExtData().info.name === that.stopName) {
-                                                stop[p].emit('click', {
-                                                    target: stop[p]
-                                                });
-                                                return;
-                                            }
+                                    this.linesearchInfo.start.emit('click', {
+                                        target: start
+                                    })
+                                } else if(end.getExtData().info.name === that.stopName) {
+                                    end.emit('click', {
+                                        target: end
+                                    })
+                                } else {
+                                    for(let a = stop.length - 2, p = 0; p < a; p++) {
+                                        if(markers[p].getExtData().info.name === that.stopName) {
+                                            stop[p].emit('click', {
+                                                target: stop[p]
+                                            });
+                                            return;
                                         }
                                     }
+                                }
                                 gd.map.setFitView();
                                 break;
-                            case 'fa-bus':
-                                that.stationName = data.name.match(/^([^(]+)/)[0];
-                            case 'fa-bullseye':
+                            case STATIONTYPE:
+                            case POISTYPE:
                                 gd.UI.hideLine();
                                 gd.UI.hideStation();
                                 gd.UI.hidePois();
@@ -365,13 +341,62 @@ export default class RealBus extends Component {
                 }
             })()
         };
+
+        this.state = {
+            realTimeBus: [],
+            realTimeBusHiden: true,
+            collectionContent: (() => {
+                var collections = [];
+                if(window.localStorage) {
+                    if(localStorage.collections) {
+                        collections = JSON.parse(localStorage.collections);
+                    }
+                }
+                return collections;
+            })()
+        };
+        this.cache = {
+            busline: (() => {
+                var search = [];
+                var cache = {};
+                if(window.localStorage) {
+                    if(localStorage.search) {
+                        search = JSON.parse(localStorage.search);
+                    }
+                }
+                search.map(item => {
+                    "use strict";
+                    if(item.data.className == BUSTYPE) {
+                        var name = item.data.name.match(/^([^(]+)/)[0];
+                        cache[name] = cache[name] ? cache[name] : [];
+                        item.data && cache[name].every((line) => {return item.data.id != line.id}) && cache[name].push(item.data);
+                        item.other && cache[name].every((line) => {return item.other.id != line.id}) && cache[name].push(item.other);
+                    }
+                });
+                return cache;
+            })()
+        };
+        this.id = undefined;
+        this.stopName = undefined;
+        this.stationName = undefined;
+        this.lineName = undefined;
+        this.data = undefined;
         this.gd = gd;
         this.handle = {
             lineChangeHandle: (stop, data) => {
                 this.setState({
                     realTimeBus: [data],
                     realTimeBusHiden: false
-                })
+                });
+            },
+            realTimeBusInfoIconUpdate: (index) => {
+                this.state.realTimeBus[index].realTimeBusInfoIcon  = (this.state.realTimeBus[index].realTimeBusInfoIcon == REALBUSICONUP ? REALBUSICONDOWN : REALBUSICONUP);
+                this.setState(this.state);
+            },
+            realTimeBusInfoStopAtUpdate: (index, stopId) => {
+                this.state.realTimeBus[index].stopAt = stopId;
+                //smy.getArriveBase(that.busName)
+                this.setState(this.state);
             },
             stationChangeHandle: (stop, data) => {
                 this.setState({
@@ -386,13 +411,14 @@ export default class RealBus extends Component {
             mergeLineInfo: (data, type) => {
                 return new Promise((resolve, reject) => {
                     switch (type) {
-                        case 'fa-random':
+                        case BUSTYPE:
                             data.busName = data.name.match(/^([^(]+)/)[0];
                             data.lineName = data.start_stop + '--' + data.end_stop;
                             data.starStatus = this.state.collectionContent.some((item) => {return item.id == data.id}) ? 'fa fa-star': 'fa fa-star-o';
                             data.realTimeBusStatus = 'fa fa-bus';
                             data.realTimeBusMsg = "实时公交加载中...";
-                            data.realTimeBusInfoIcon = 'fa fa-angle-down';
+                            data.realTimeBusInfoIcon = REALBUSICONDOWN;
+                            data.stopAt = undefined;
                             smy.getBusBase(data.busName).then((busInfo) => {
                                 data.firstBusTime = busInfo.start_earlytime;
                                 data.lastBusTime = busInfo.start_latetime;
@@ -455,26 +481,55 @@ export default class RealBus extends Component {
                                 });
                             });
                             break;
-                        case 'fa-bus':
-                        case 'fa-bullseye':
+                        case STATIONTYPE:
+                        case POISTYPE:
                             resolve(data);
                             break;
                     }
                 })
             },
             changeDirectionHandle: () => {
-                if(that.lineName && that.cache.busline[that.lineName] && that.cache.busline[that.lineName].length > 1) {
-                    for(let data of that.cache.busline[that.lineName]) {
-                        if(data.id != that.id) {
-                            let type = 'fa-random';
-                            that.handle.mergeLineInfo(data, type).then((result) => {
-                                gd.UI.draw(result, type, data);
+                if(that.data.busName && that.cache.busline[that.data.busName] && that.cache.busline[that.data.busName].length > 1) {
+                    for(let data of that.cache.busline[that.data.busName]) {
+                        if(data.id != that.data.id) {
+                            that.handle.mergeLineInfo(data, BUSTYPE).then((result) => {
+                                for(let i = 0, j = that.state.realTimeBus.length; i < j; i++) {
+                                    if(that.state.realTimeBus[i].id == that.data.id) {
+                                        data.realTimeBusInfoIcon = that.state.realTimeBus[i].realTimeBusInfoIcon;
+                                        that.data = data;
+                                        that.state.realTimeBus[i] = data;
+                                        break;
+                                    }
+                                }
+                                gd.UI.draw(result, BUSTYPE, data);
+                                that.setState({
+                                    realTimeBus: that.state.realTimeBus
+                                })
                             });
                             break;
                         }
                     }
                 }
-            }
+            },
+            judgePosition: (() => {
+                var amap;
+                var o = {
+                    setMap: function() {
+                        amap = document.getElementsByClassName('amap-geolocation-con')[0];
+                        this.then && this.then();
+                    },
+                    setPosition: height => {
+                        if(amap) {
+                            amap.style.bottom = height;
+                        } else {
+                            o.setMap.prototype.then = function() {
+                                amap.style.bottom = height;
+                            }
+                        }
+                    }
+                };
+                return o;
+            })()
         }
     };
     onComplete(info) {
@@ -490,9 +545,9 @@ export default class RealBus extends Component {
     render() {
         return (
             <div className="realBusRoot">
-                <Map gd={this.gd}></Map>
+                <Map gd={this.gd} handle={this.handle}></Map>
                 <Header gd={this.gd} handle={this.handle} collectionContent={this.state.collectionContent} cache={this.cache}/>
-                <Footer gd={this.gd} realTimeBus={this.state.realTimeBus} realTimeBusHiden={this.state.realTimeBusHiden} handle={this.handle}/>
+                <Footer gd={this.gd} handle={this.handle} realTimeBus={this.state.realTimeBus} realTimeBusHiden={this.state.realTimeBusHiden}/>
             </div>
         )
     }
