@@ -6,6 +6,7 @@ module.exports = (() => {
     var cacheBase = [];
     var cacheStop = [];
     var cacheArrive = [];
+    var lastTime;
     return {
         getBusBase(bus) {
             "use strict";
@@ -197,7 +198,9 @@ module.exports = (() => {
         getArriveBase(bus, id, direction, stopId) {
             "use strict";
             return new Promise((resolve, reject) => {
-                if (!cacheStop[id]) {
+                var now = +new Date();
+                if (!cacheStop[id] || lastTime + 5000 < now) {
+                    lastTime = now;
                     fetch("./api/getArriveBase?name=" + bus + "&lineid=" + id + "&direction=" + direction + "&stopid=" + stopId, {
                         method: 'get'
                     }).then((response) => {
@@ -216,6 +219,7 @@ module.exports = (() => {
                         reject();
                     })
                 } else {
+                    cacheArrive[id]
                     resolve(cacheStop[id]);
                 }
             });

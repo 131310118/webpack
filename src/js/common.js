@@ -1,7 +1,7 @@
 /**
  * Created by 王军 on 2017/4/17.
  */
-var $ = {
+/*var $ = {
     setOpacity:function(element,opacity){
         opacity = opacity>1?1:opacity;
         opacity = opacity<0?0:opacity;
@@ -120,19 +120,38 @@ var tips = (function(){
         show:show,
         close:close
     }
-})();
+})();*/
+var parseMsToTime = function(s){
+    s = s > 0 ? s : 0;
+    var str = '';
+    var h = 0;
+    var mi = Math.floor(s / 60);
+    s = s % 60;
+    if(mi >= 60) {
+        h = Math.floor(mi / 60);
+        mi = mi % 60;
+    }
+    if(h > 0) {
+        str += h + '时';
+    }
+    if(mi > 0) {
+        str += mi + '分';
+    }
+    str += s + '秒到达';
+    return str;
+};
 
-function tag(tagName,props){
+/*function tag(tagName,props){
     var Tag = document.createElement(tagName);
     if(typeof props == 'string'){
         Tag.className = props;
     }
     else{
         if(props != undefined){
-            /*if(props.style){
+            /!*if(props.style){
              updateObject(props.style,tag.style);
              delete props.style;
-             }*/
+             }*!/
             updateObject(props,Tag);
         }
     }
@@ -151,11 +170,12 @@ function updateObject(inputValue,outputValue){
         }
     }
     return outputValue;
-}
+}*/
 
 module.exports = {
-    $: $,
+   /* $: $,
     tips: tips,
     tag: tag,
-    updateObject: updateObject
+    updateObject: updateObject,*/
+    parseMsToTime: parseMsToTime
 };

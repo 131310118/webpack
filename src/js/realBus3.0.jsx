@@ -13,6 +13,7 @@ import Footer from './footer/footer.jsx';
 import startIcon from '../img/start.png';
 import endIcon from '../img/end.png';
 import {CITY, PAGEINDEX, PAGESIZE, BUSTYPE, STATIONTYPE, POISTYPE, REALBUSICONDOWN, REALBUSICONUP} from './variables.js';
+import {parseMsToTime} from './common.js';
 
 require('../css/font-awesome.min.css');
 var scale = 1 / devicePixelRatio;
@@ -388,7 +389,12 @@ export default class RealBus extends Component {
                     realTimeBus: [data],
                     realTimeBusHiden: false
                 });
-            },
+                data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.stopAt).then((result) => {
+                    data.cars = result.cars;
+                    data.current = +new Date();
+                })
+            }
+            ,
             realTimeBusInfoIconUpdate: (index) => {
                 this.state.realTimeBus[index].realTimeBusInfoIcon  = (this.state.realTimeBus[index].realTimeBusInfoIcon == REALBUSICONUP ? REALBUSICONDOWN : REALBUSICONUP);
                 this.setState(this.state);
@@ -422,6 +428,8 @@ export default class RealBus extends Component {
                             smy.getBusBase(data.busName).then((busInfo) => {
                                 data.firstBusTime = busInfo.start_earlytime;
                                 data.lastBusTime = busInfo.start_latetime;
+                                data.lineId = busInfo.line_id;
+                                data.direction = 0;
                                 smy.getBusStop(data.busName, busInfo.line_id).then((lines) => {
                                     data.isSingleLine = !(lines['lineResults1'].stops && lines['lineResults0'].stops);
                                     //未获取到数据
@@ -450,6 +458,7 @@ export default class RealBus extends Component {
                                         }
                                         if (left < right) {
                                             direction = 'lineResults1';
+                                            data.direction = 1;
                                         } else {
                                             direction = 'lineResults0';
                                         }
@@ -496,6 +505,7 @@ export default class RealBus extends Component {
                                 for(let i = 0, j = that.state.realTimeBus.length; i < j; i++) {
                                     if(that.state.realTimeBus[i].id == that.data.id) {
                                         data.realTimeBusInfoIcon = that.state.realTimeBus[i].realTimeBusInfoIcon;
+                                        data.stopAt = that.state.realTimeBus[i].stopAt;
                                         that.data = data;
                                         that.state.realTimeBus[i] = data;
                                         break;
@@ -531,6 +541,15 @@ export default class RealBus extends Component {
                 return o;
             })()
         }
+    };
+    componentDidUpdate() {
+        clearTimeout(this.updateRealBusTime);
+        this.updateRealBusTime = setTimeOut(() => {
+            this.state.realTimeBus.map((item) => {
+                item.cars && (item.realTimeBusMsg = parseMsToTime(item.cars[0].time - Math.floor((new Date() - data.current) / 1000)));
+            });
+            this.setState(this.state);
+        }, 1000);
     };
     onComplete(info) {
 

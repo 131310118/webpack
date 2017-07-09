@@ -12,6 +12,10 @@ export default class Footer extends Component {
     };
     componentDidUpdate() {
         this.props.handle.judgePosition.setPosition(this.refs.footer.clientHeight + 10 + 'px');
+        this.props.realTimeBus.map((item, index) => {
+            "use strict";
+            item.realTimeBusInfoIcon != REALBUSICONDOWN && item.stopAt && (this.refs["realTimeBusStops" + index].scrollLeft = this.refs["stopAt" + index].offsetLeft - 2.5 * this.refs["stopAt" + index].clientWidth);
+        })
     };
     realTimeBusUpdate(index) {
         "use strict";
@@ -64,12 +68,20 @@ export default class Footer extends Component {
                                             <span className="realTimeBusMsg">{item.realTimeBusMsg}</span>
                                             <i className={item.realTimeBusInfoIcon} onClick={this.realTimeBusUpdate(index)}></i>
                                         </div>
-                                        <ul className={item.realTimeBusInfoIcon == REALBUSICONDOWN ? "realTimeBusStops hiden" : "realTimeBusStops"}>
+                                        <ul className={item.realTimeBusInfoIcon == REALBUSICONDOWN ? "realTimeBusStops hiden" : "realTimeBusStops"} ref={"realTimeBusStops" + index}>
                                             {
                                                 item.via_stops.map((stop, stopIndex) => {
-                                                    return (
-                                                        <li key={stopIndex} className="realTimeBusStop" onClick={this.stopClickHandle(index, stop.id)}>
-                                                            <i className={item.stopAt === stop.id ? "circle active" : "circle"}></i>
+                                                    if( item.stopAt !== stop.id) {
+                                                        return (
+                                                            <li key={stopIndex} className="realTimeBusStop" onClick={this.stopClickHandle(index, stop.id)}>
+                                                                <i className="circle"></i>
+                                                                <span>{stop.name}</span>
+                                                            </li>
+                                                        )
+                                                    }
+                                                    return  (
+                                                        <li key={stopIndex} className="realTimeBusStop" onClick={this.stopClickHandle(index, stop.id)} ref={"stopAt" + index}>
+                                                            <i className="circle active"></i>
                                                             <span>{stop.name}</span>
                                                         </li>
                                                     )
