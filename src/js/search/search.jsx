@@ -132,42 +132,43 @@ export default class Search extends Component {
         e = e || window.event;
         if(window.localStorage) {
             var data = this.state.searchResult[e.target.getAttribute('data-index')];
-            var index = this.searchHistory.arr.findIndex((item) => {
-                return item.id == data.id;
-            });
-            if(index != -1) {
-                this.searchHistory.objArr.splice(index, 1);
-                this.searchHistory.arr.splice(index, 1);
-            }
-            let name = data.name.match(/^([^(]+)/)[0];
-            let other = undefined;
-            if(this.props.cache.busline[name] && this.props.cache.busline[name].length > 1) {
-                for(let d of this.props.cache.busline[name]) {
-                    if(d.id != data.id) {
-                        other = d;
-                    }
-                }
-            }
-            this.searchHistory.objArr.unshift({data: data, other: other});
-            this.searchHistory.arr.unshift(data);
-            this.searchHistory.objArr.length = this.searchHistory.objArr.length > 5 ? 5 : this.searchHistory.objArr.length;
-            this.searchHistory.arr.length = this.searchHistory.arr.length > 5 ? 5 : this.searchHistory.arr.length;
-            localStorage.search = JSON.stringify(this.searchHistory.objArr);
             var type = data.className;
             this.props.handle.mergeLineInfo(data, type).then((result) => {
+                var index = this.searchHistory.arr.findIndex((item) => {
+                    return item.id == data.id;
+                });
+                if(index != -1) {
+                    this.searchHistory.objArr.splice(index, 1);
+                    this.searchHistory.arr.splice(index, 1);
+                }
+                let name = data.name.match(/^([^(]+)/)[0];
+                let other = undefined;
+                if(this.props.cache.busline[name] && this.props.cache.busline[name].length > 1) {
+                    for(let d of this.props.cache.busline[name]) {
+                        if(d.id != data.id) {
+                            other = d;
+                        }
+                    }
+                }
+                this.searchHistory.objArr.unshift({data: data, other: other});
+                this.searchHistory.arr.unshift(data);
+                this.searchHistory.objArr.length = this.searchHistory.objArr.length > 5 ? 5 : this.searchHistory.objArr.length;
+                this.searchHistory.arr.length = this.searchHistory.arr.length > 5 ? 5 : this.searchHistory.arr.length;
+                localStorage.search = JSON.stringify(this.searchHistory.objArr);
+
                 this.props.gd.UI.draw(result, type, data);
                 switch(type) {
                     case 'fa-random':
                         this.props.hideStation();
-                        this.props.handle.lineChangeHandle(result, data);
+                        this.props.handle.lineChangeHandle(data);
                         break;
                     case 'fa-bus':
                         this.props.hideStation();
-                        this.props.handle.stationChangeHandle(result, data);
+                        this.props.handle.stationChangeHandle(data);
                         break;
                     case 'fa-bullseye':
                         this.props.showStation(data.name);
-                        this.props.handle.poisChangeHandle(result, data);
+                        this.props.handle.poisChangeHandle(data);
                         break;
                 }
             });

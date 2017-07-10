@@ -3,10 +3,10 @@
  */
 
 module.exports = (() => {
-    var cacheBase = [];
-    var cacheStop = [];
-    var cacheArrive = [];
-    var lastTime;
+    var cacheBase = {};
+    var cacheStop = {};
+    var cacheArrive = {};
+    var lastTime, lastUpdateTime;
     return {
         getBusBase(bus) {
             "use strict";
@@ -199,8 +199,9 @@ module.exports = (() => {
             "use strict";
             return new Promise((resolve, reject) => {
                 var now = +new Date();
-                if (!cacheStop[id] || lastTime + 5000 < now) {
+                if (!cacheArrive[id] || lastTime + 5000 < now) {
                     lastTime = now;
+                    lastUpdateTime = now;
                     fetch("./api/getArriveBase?name=" + bus + "&lineid=" + id + "&direction=" + direction + "&stopid=" + stopId, {
                         method: 'get'
                     }).then((response) => {
@@ -208,7 +209,14 @@ module.exports = (() => {
                             return response.json();
                         } else {
                             //reject();
-                            response = {};
+                            response = {
+                                "cars" : [ {
+                                    "time" : "192",
+                                    "distance" : "933",
+                                    "terminal" : "沪D-81730",
+                                    "stopdis" : "2"
+                                } ]
+                            };
                             return response;
                         }
                     }).then((response) => {
@@ -219,8 +227,9 @@ module.exports = (() => {
                         reject();
                     })
                 } else {
-                    cacheArrive[id]
-                    resolve(cacheStop[id]);
+                    cacheArrive[id].cars[0].time = cacheArrive[id].cars[0].time - Math.floor((now - lastUpdateTime) / 1000);
+                    lastUpdateTime = now;
+                    resolve(cacheArrive[id]);
                 }
             });
         }

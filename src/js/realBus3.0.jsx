@@ -12,8 +12,8 @@ import Header from './header/header.jsx';
 import Footer from './footer/footer.jsx';
 import startIcon from '../img/start.png';
 import endIcon from '../img/end.png';
-import {CITY, PAGEINDEX, PAGESIZE, BUSTYPE, STATIONTYPE, POISTYPE, REALBUSICONDOWN, REALBUSICONUP} from './variables.js';
-import {parseMsToTime} from './common.js';
+import {CITY, PAGEINDEX, PAGESIZE, BUSTYPE, STATIONTYPE, POISTYPE, REALBUSICONDOWN, REALBUSICONUP, STAR, STARO} from './variables.js';
+import {parseMsToTime, realTimeMessage} from './common.js';
 
 require('../css/font-awesome.min.css');
 var scale = 1 / devicePixelRatio;
@@ -384,7 +384,11 @@ export default class RealBus extends Component {
         this.data = undefined;
         this.gd = gd;
         this.handle = {
-            lineChangeHandle: (stop, data) => {
+            lineChangeHandle: (data) => {
+                this.cache.busline[data.busName].every((line) => {return data.id != line.id}) && this.cache.busline[data.busName].push(data);
+                var index = this.cache.busline[data.busName].findIndex((line) => {return line.id == data.id});
+                data = this.cache.busline[data.busName][index];
+                data.realTimeBusInfoIcon = REALBUSICONUP;
                 this.setState({
                     realTimeBus: [data],
                     realTimeBusHiden: false
@@ -392,24 +396,34 @@ export default class RealBus extends Component {
                 data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.stopAt).then((result) => {
                     data.cars = result.cars;
                     data.current = +new Date();
+                    data.realTimeBusMsg = "还有" + result.cars[0].stopdis + "站，" + parseMsToTime(result.cars[0].time) + "后预计到达";
+                    this.setState({
+                        realTimeBus: [data]
+                    });
                 })
-            }
-            ,
+            },
             realTimeBusInfoIconUpdate: (index) => {
                 this.state.realTimeBus[index].realTimeBusInfoIcon  = (this.state.realTimeBus[index].realTimeBusInfoIcon == REALBUSICONUP ? REALBUSICONDOWN : REALBUSICONUP);
                 this.setState(this.state);
             },
             realTimeBusInfoStopAtUpdate: (index, stopId) => {
-                this.state.realTimeBus[index].stopAt = stopId;
+                var data = this.state.realTimeBus[index];
+                data.stopAt = stopId;
                 //smy.getArriveBase(that.busName)
                 this.setState(this.state);
+                data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.stopAt).then((result) => {
+                    data.cars = result.cars;
+                    data.current = +new Date();
+                    data.realTimeBusMsg = realTimeMessage(result.cars[0].stopdis, result.cars[0].time);
+                    this.setState(this.state);
+                })
             },
-            stationChangeHandle: (stop, data) => {
+            stationChangeHandle: (data) => {
                 this.setState({
                     realTimeBusHiden: true
                 })
             },
-            poisChangeHandle: (stop, data) => {
+            poisChangeHandle: (data) => {
                 this.setState({
                     realTimeBusHiden: true
                 })
@@ -420,9 +434,9 @@ export default class RealBus extends Component {
                         case BUSTYPE:
                             data.busName = data.name.match(/^([^(]+)/)[0];
                             data.lineName = data.start_stop + '--' + data.end_stop;
-                            data.starStatus = this.state.collectionContent.some((item) => {return item.id == data.id}) ? 'fa fa-star': 'fa fa-star-o';
+                            data.starStatus = this.state.collectionContent.some((item) => {return item.id == data.id}) ? STAR: STARO;
                             data.realTimeBusStatus = 'fa fa-bus';
-                            data.realTimeBusMsg = "实时公交加载中...";
+                            data.realTimeBusMsg = "选择站点查询实时公交";
                             data.realTimeBusInfoIcon = REALBUSICONDOWN;
                             data.stopAt = undefined;
                             smy.getBusBase(data.busName).then((busInfo) => {
@@ -485,6 +499,8 @@ export default class RealBus extends Component {
                                             }
                                         }
                                     }
+                                    data.isMerge = true;
+                                    data.via_stops = stop;
                                     //数据校正--end
                                     resolve(stop);
                                 });
@@ -498,24 +514,43 @@ export default class RealBus extends Component {
                 })
             },
             changeDirectionHandle: () => {
+                var changeDirectionHandle = data => {
+                    for(let i = 0, j = that.state.realTimeBus.length; i < j; i++) {
+                        if(that.state.realTimeBus[i].id == that.data.id) {
+                            data.realTimeBusInfoIcon = that.state.realTimeBus[i].realTimeBusInfoIcon;
+                            data.via_stops.some((stop) => {
+                                if(stop.id == that.state.realTimeBus[i].stopAt) {
+                                    data.stopAt = stop.id;
+                                    return true;
+                                }
+                                return false;
+                            });
+                            that.data = data;
+                            that.state.realTimeBus[i] = data;
+                            break;
+                        }
+                    }
+                    gd.UI.draw(data.via_stops, BUSTYPE, data);
+                    that.setState({
+                        realTimeBus: that.state.realTimeBus
+                    });
+                    data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.stopAt).then((result) => {
+                        data.cars = result.cars;
+                        data.current = +new Date();
+                        data.realTimeBusMsg = realTimeMessage(result.cars[0].stopdis, result.cars[0].time);
+                        this.setState(this.state);
+                    });
+                };
                 if(that.data.busName && that.cache.busline[that.data.busName] && that.cache.busline[that.data.busName].length > 1) {
                     for(let data of that.cache.busline[that.data.busName]) {
                         if(data.id != that.data.id) {
-                            that.handle.mergeLineInfo(data, BUSTYPE).then((result) => {
-                                for(let i = 0, j = that.state.realTimeBus.length; i < j; i++) {
-                                    if(that.state.realTimeBus[i].id == that.data.id) {
-                                        data.realTimeBusInfoIcon = that.state.realTimeBus[i].realTimeBusInfoIcon;
-                                        data.stopAt = that.state.realTimeBus[i].stopAt;
-                                        that.data = data;
-                                        that.state.realTimeBus[i] = data;
-                                        break;
-                                    }
-                                }
-                                gd.UI.draw(result, BUSTYPE, data);
-                                that.setState({
-                                    realTimeBus: that.state.realTimeBus
-                                })
-                            });
+                            if(data.isMerge) {
+                                changeDirectionHandle(data);
+                            } else {
+                                that.handle.mergeLineInfo(data, BUSTYPE).then(() => {
+                                    changeDirectionHandle(data);
+                                });
+                            }
                             break;
                         }
                     }
@@ -539,14 +574,47 @@ export default class RealBus extends Component {
                     }
                 };
                 return o;
-            })()
+            })(),
+            scrollLeftUpdateHandle: (index, scrollLeft) => {
+                this.state.realTimeBus[index].scrollLeft = scrollLeft;
+            },
+            collectionAdd: (data, inx) => {
+                var index = this.state.collectionContent.findIndex((item) => {
+                    return item.id == data.id;
+                });
+                if(index == -1) {
+                    this.state.realTimeBus[inx].starStatus = STAR;
+                    this.state.collectionContent.push(data);
+                    if(window.localStorage) {
+                        localStorage.collections = JSON.stringify(this.state.collectionContent);
+                    }
+                    this.setState(this.state);
+                }
+            },
+            collectionDel: (data, inx) => {
+                var index = this.state.collectionContent.findIndex((item) => {
+                    return item.id == data.id;
+                });
+                if(index != -1) {
+                    this.state.realTimeBus[inx].starStatus = STARO;
+                    this.state.collectionContent.splice(index, 1);
+                    if(window.localStorage) {
+                        localStorage.collections = JSON.stringify(this.state.collectionContent);
+                    }
+                    this.setState(this.state);
+                }
+            }
         }
     };
     componentDidUpdate() {
         clearTimeout(this.updateRealBusTime);
-        this.updateRealBusTime = setTimeOut(() => {
+        this.updateRealBusTime = setTimeout(() => {
             this.state.realTimeBus.map((item) => {
-                item.cars && (item.realTimeBusMsg = parseMsToTime(item.cars[0].time - Math.floor((new Date() - data.current) / 1000)));
+                item.cars && item.stopAt && smy.getArriveBase(item.busName, item.lineId, item.direction, item.stopAt).then((result) => {
+                    item.cars = result.cars;
+                    item.current = +new Date();
+                    item.realTimeBusMsg = realTimeMessage(result.cars[0].stopdis, result.cars[0].time);
+                });
             });
             this.setState(this.state);
         }, 1000);

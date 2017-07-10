@@ -32,6 +32,12 @@ export default class Header extends Component {
             collectionHiden: !this.state.collectionHiden
         })
     };
+    collectionItemClickHandle = (data) => {
+        "use strict";
+        return () => {
+            this.props.handle.lineChangeHandle(data);
+        }
+    };
     render() {
         "use strict";
         var stationName = "stationName";
@@ -46,7 +52,7 @@ export default class Header extends Component {
                     <i className="fa fa-star"></i>
                     收藏夹
                     <ul className={collectionList}>{this.props.collectionContent.length ? this.props.collectionContent.map((item, index) => {
-                        return <li key={index} className="collectionListItem">item.name</li>
+                        return <li key={index} className="collectionListItem" onClick={this.collectionItemClickHandle(item)}>{item.name}</li>
                     }) : <li className="collectionListItem">空</li>}</ul>
                 </span>
             </div>

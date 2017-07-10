@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {REALBUSICONDOWN, REALBUSICONUP} from '../variables.js';
+import {REALBUSICONDOWN, REALBUSICONUP, STAR, STARO} from '../variables.js';
 require('./footer.scss');
 
 export default class Footer extends Component {
@@ -8,15 +8,42 @@ export default class Footer extends Component {
         super(props);
         this.state = {
             radius: this.props.radius || 500
-        }
+        };
     };
     componentDidUpdate() {
         this.props.handle.judgePosition.setPosition(this.refs.footer.clientHeight + 10 + 'px');
         this.props.realTimeBus.map((item, index) => {
             "use strict";
-            item.realTimeBusInfoIcon != REALBUSICONDOWN && item.stopAt && (this.refs["realTimeBusStops" + index].scrollLeft = this.refs["stopAt" + index].offsetLeft - 2.5 * this.refs["stopAt" + index].clientWidth);
+            if(item.realTimeBusInfoIcon == REALBUSICONUP) {
+                if(!item.height) {
+                    this.refs["realTimeBusStops" + index].style.height = "auto";
+                    this.refs["realTimeBusStops" + index].style.height = this.refs["realTimeBusStops" + index].offsetHeight + 'px';
+                }
+                item.height = this.refs["realTimeBusStops" + index].style.height;
+                if(item.stopAt) {
+                    if(item.scrollLeft != undefined) {
+                        this.refs["realTimeBusStops" + index].scrollLeft = item.scrollLeft;
+                    } else {
+                        this.refs["realTimeBusStops" + index].scrollLeft = this.refs["stopAt" + index].offsetLeft - 2.5 * this.refs["stopAt" + index].clientWidth;
+                        item.scrollLeft = this.refs["realTimeBusStops" + index].scrollLeft;
+                    }
+                }
+            }
         })
     };
+    realTimeBusStopsScrollHandle(index) {
+        "use strict";
+        return () => {
+            this.props.handle.scrollLeftUpdateHandle(index, this.refs["realTimeBusStops" + index].scrollLeft);
+        };
+    }
+    componentDidMount() {
+        this.props.realTimeBus.map((item, index) => {
+            "use strict";
+            item.realTimeBusInfoIcon != REALBUSICONDOWN && item.stopAt && (this.refs["realTimeBusStops" + index].scrollLeft = this.refs["stopAt" + index].offsetLeft - 2.5 * this.refs["stopAt" + index].clientWidth);
+            this.refs["realTimeBusStops" + index].style.height = this.refs["realTimeBusStops" + index].clientHeight + 'px';
+        })
+    }
     realTimeBusUpdate(index) {
         "use strict";
         return () => {
@@ -25,10 +52,22 @@ export default class Footer extends Component {
     };
     stopClickHandle(index, stopId) {
         "use strict";
-        return () => {
+        return (e) => {
+            e = e || window.event;
             this.props.handle.realTimeBusInfoStopAtUpdate(index, stopId);
+            this.refs["realTimeBusStops" + index].scrollLeft = e.currentTarget.offsetLeft - 2.5 * e.currentTarget.clientWidth;
         }
-    }
+    };
+    collectionClickHandle(index) {
+        "use strict";
+        return () => {
+            if(this.props.realTimeBus[index].starStatus == STAR) {
+                this.props.handle.collectionDel(this.props.realTimeBus[index], index);
+            } else {
+                this.props.handle.collectionAdd(this.props.realTimeBus[index], index);
+            }
+        }
+    };
     render() {
         "use strict";
         var realTimeBus = 'realTimeBus';
@@ -50,7 +89,7 @@ export default class Footer extends Component {
                                         <div className="busInfo">
                                             <span className="busName" title={item.busName} onClick={this.props.handle.changeDirectionHandle}>{item.busName}</span>
                                             {((that) => {if(!item.isSingleLine) {return <i className="fa fa-exchange" onClick={this.props.handle.changeDirectionHandle}></i>}})(this)}
-                                            <i className={item.starStatus}></i>
+                                            <i className={item.starStatus} onClick={this.collectionClickHandle(index)}></i>
                                         </div>
                                         <div className="lineInfo">
                                             <span className="lineName" title={item.lineName}>{item.lineName}</span>
@@ -68,7 +107,7 @@ export default class Footer extends Component {
                                             <span className="realTimeBusMsg">{item.realTimeBusMsg}</span>
                                             <i className={item.realTimeBusInfoIcon} onClick={this.realTimeBusUpdate(index)}></i>
                                         </div>
-                                        <ul className={item.realTimeBusInfoIcon == REALBUSICONDOWN ? "realTimeBusStops hiden" : "realTimeBusStops"} ref={"realTimeBusStops" + index}>
+                                        <ul className={item.realTimeBusInfoIcon == REALBUSICONDOWN ? "realTimeBusStops slideInDown" : "realTimeBusStops"} ref={"realTimeBusStops" + index} onScroll={this.realTimeBusStopsScrollHandle(index)}>
                                             {
                                                 item.via_stops.map((stop, stopIndex) => {
                                                     if( item.stopAt !== stop.id) {

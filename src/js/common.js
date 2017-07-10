@@ -141,6 +141,11 @@ var parseMsToTime = function(s){
     return str;
 };
 
+var realTimeMessage = (stops, time) => {
+    "use strict";
+    return "还有" + stops + "站，" + parseMsToTime(time) + "后预计到达";
+};
+
 /*function tag(tagName,props){
     var Tag = document.createElement(tagName);
     if(typeof props == 'string'){
@@ -177,5 +182,6 @@ module.exports = {
     tips: tips,
     tag: tag,
     updateObject: updateObject,*/
-    parseMsToTime: parseMsToTime
+    parseMsToTime: parseMsToTime,
+    realTimeMessage: realTimeMessage
 };

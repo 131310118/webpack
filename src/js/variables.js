@@ -9,14 +9,18 @@ const STATIONTYPE = 'fa-bus';
 const POISTYPE = 'fa-bullseye';
 const REALBUSICONDOWN = 'fa fa-angle-down';
 const REALBUSICONUP = 'fa fa-angle-up';
+const STAR = 'fa fa-star';
+const STARO = 'fa fa-star-o';
 
 module.exports = {
-    CITY : 'shanghai',
-    PAGEINDEX : 1,
-    PAGESIZE : 60,
-    BUSTYPE : 'fa-random',
-    STATIONTYPE : 'fa-bus',
-    POISTYPE : 'fa-bullseye',
-    REALBUSICONDOWN : 'fa fa-angle-down',
-    REALBUSICONUP : 'fa fa-angle-up'
+    CITY: CITY,
+    PAGEINDEX: PAGEINDEX,
+    PAGESIZE: PAGESIZE,
+    BUSTYPE: BUSTYPE,
+    STATIONTYPE: STATIONTYPE,
+    POISTYPE: POISTYPE,
+    REALBUSICONDOWN: REALBUSICONDOWN,
+    REALBUSICONUP: REALBUSICONUP,
+    STAR: STAR,
+    STARO: STARO
 };
