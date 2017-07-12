@@ -31,25 +31,24 @@
   }
   .collectionList {
     position: absolute;
-    left: 0;
-    top: 100%;
-    min-width: 1.28rem;
-    max-width: 3rem;
+    left: 100%;
+    top: 0;
+    width: 8rem;
     list-style: none;
     margin: 0;
     padding: 0;
     background-color: #fff;
-    transform: translateY(5px);
-    border: 1px solid #cccccc;
+    transform: translateX(5px);
+    border: 1px solid #ccc;
     border-radius: 5px;
     &:before {
-      content: '';
+      content: "";
       display: inline-block;
       border: 5px solid transparent;
-      border-bottom-color: #cccccc;
+      border-right-color: #ccc;
       position: absolute;
-      top: -11px;
-      left: 15px;
+      top: 10px;
+      left: -11px;
     }
   }
   .collectionListItem {
