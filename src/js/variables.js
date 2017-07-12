@@ -11,6 +11,7 @@ const REALBUSICONDOWN = 'fa fa-angle-down';
 const REALBUSICONUP = 'fa fa-angle-up';
 const STAR = 'fa fa-star';
 const STARO = 'fa fa-star-o';
+const NEARBYSTATION = Symbol();
 
 module.exports = {
     CITY: CITY,
@@ -22,5 +23,6 @@ module.exports = {
     REALBUSICONDOWN: REALBUSICONDOWN,
     REALBUSICONUP: REALBUSICONUP,
     STAR: STAR,
-    STARO: STARO
+    STARO: STARO,
+    NEARBYSTATION: NEARBYSTATION
 };

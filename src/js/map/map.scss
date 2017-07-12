@@ -1,0 +1,55 @@
+.rtb_point {
+  position: relative;
+  max-width: 6.67rem;
+  box-shadow: 0 0 0.5px rgba(0,0,100,.6);
+  background: #fff;
+  margin-bottom: 31px;
+  border-radius: 2px;
+  text-align: left;
+  border: 1px solid silver;
+}
+.rtb_point_info {
+  padding: 0;
+  position: relative;
+  background-color: #fff;
+  margin: 8px;
+}
+.rtb_point_info_title {
+  line-height: 22px;
+  font-size: 14px;
+  border-bottom: 1px #99adce solid;
+  padding-right: 15px;
+}
+.rtb_point_info_content {
+  padding-top: 5px;
+  overflow: hidden;
+  font-size: 12px;
+  zoom: 1;
+}
+.rtb_point_busLine {
+  background-color: transparent;
+  color: #0f89f5;
+  text-decoration: none;
+  cursor: pointer;
+  margin: 0 2px;
+}
+.rtb_point_close {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  line-height: 15px;
+  font-size: 14px;
+  color: #cfcfcf;
+  cursor: pointer;
+  padding: 0 3px;
+}
+.rtb_point_sharp {
+  position: absolute;
+  bottom: -2px;
+  background-color: #ffffff;
+  left: 50%;
+  border-left: 1px solid silver;
+  border-bottom: 1px solid silver;
+  padding: 4px;
+  transform: rotate(-45deg) translateX(-50%);
+}

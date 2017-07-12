@@ -12,7 +12,7 @@ import Header from './header/header.jsx';
 import Footer from './footer/footer.jsx';
 import startIcon from '../img/start.png';
 import endIcon from '../img/end.png';
-import {CITY, PAGEINDEX, PAGESIZE, BUSTYPE, STATIONTYPE, POISTYPE, REALBUSICONDOWN, REALBUSICONUP, STAR, STARO} from './variables.js';
+import {NEARBYSTATION, CITY, PAGEINDEX, PAGESIZE, BUSTYPE, STATIONTYPE, POISTYPE, REALBUSICONDOWN, REALBUSICONUP, STAR, STARO} from './variables.js';
 import {parseMsToTime, realTimeMessage} from './common.js';
 
 require('../css/font-awesome.min.css');
@@ -20,7 +20,7 @@ var scale = 1 / devicePixelRatio;
 document.querySelector('meta[name="viewport"]').setAttribute('content','initial-scale=' + scale + ',' +
     'maximum-scale=' + scale + ', minimum-scale=' + scale + ', user-scalable=no');
 document.documentElement.style.fontSize = document.documentElement.clientWidth / 10 + 'px';
-
+window.addEventListener('resize', () => {document.documentElement.style.fontSize = document.documentElement.clientWidth / 10 + 'px';});
 
 export default class RealBus extends Component {
     constructor() {
@@ -56,8 +56,8 @@ export default class RealBus extends Component {
                     gd.map.addControl(geolocation);
                     that.handle.judgePosition.setMap(document.getElementsByClassName('amap-geolocation-con')[0]);
                     geolocation.getCurrentPosition();
-                    AMap.event.addListener(geolocation, 'complete', that.onComplete);
-                    AMap.event.addListener(geolocation, 'error', that.onError);
+                    AMap.event.addListener(geolocation, 'complete', that.onComplete.bind(that));
+                    AMap.event.addListener(geolocation, 'error', that.onError.bind(that));
                 });
             },
             stationSearchModule: new Promise((resolve, reject) => {
@@ -110,6 +110,7 @@ export default class RealBus extends Component {
                 var flter = ['普通公交'];
                 return (bus, size) => {
                     size ? lineSearch.setPageSize(size) : "";
+                    if(bus === undefined) {throw new Error("bus is undefined");}
                     return new Promise((resolve, reject) => {
                         lineSearch.search(bus, (status, result) => {
                             if(status === 'complete' && result.info === 'OK') {
@@ -163,6 +164,97 @@ export default class RealBus extends Component {
                     })
                 })
             },
+            getStops: (o) => {
+                return new Promise((resolve, reject) => {
+                    var params = {
+                        location: o.location,
+                        key: '79a781fd5bc34c9c04a50d241db792c9',
+                        types: '150700|150701|150702|150703|150800',
+                        //keywords: '公交',
+                        city: 'shanghai',
+                        radius: this.state.radius,
+                        sortrule: 'distance',
+                        offset: 20,
+                        page: 1,
+                        output: 'JSON'
+                    };
+                    var u = new URLSearchParams();
+                    for(let key in params) {
+                        if(params.hasOwnProperty(key)) {
+                            u.append(key, params[key]);
+                        }
+                    }
+                    fetch("https://restapi.amap.com/v3/place/around?" + u, {
+                        method: 'get'
+                    }).then((response) => {
+                        if(response.status == 200) {
+                            return response.json();
+                        } else {
+                            reject();
+                        }
+                    }).then((response) => {
+                        resolve(response);
+                    })
+                })
+            },
+            stopWindow: new AMap.InfoWindow({
+                isCustom: true
+            }),
+            nearByStationClickHandle: (() => {
+                var content = document.createElement('div'); //周边站点窗口
+                content.className = 'rtb_point ';
+                var content_title = document.createElement('div');//周边站点窗口-站点名
+                var content_content = document.createElement('div');//周边站点窗口-途经公交
+                content.appendChild((function() {
+                    var dom = document.createElement('div');
+                    dom.className = 'rtb_point_info';
+                    content_title.className = 'rtb_point_info_title';
+                    content_content.className = 'rtb_point_info_content';
+                    dom.appendChild(content_title);
+                    dom.appendChild(content_content);
+                    return dom;
+                })());
+                content.appendChild((function() {
+                    var rtb_point_close = document.createElement('div');//关闭窗口按钮
+                    rtb_point_close.className = 'rtb_point_close';
+                    rtb_point_close.innerHTML = 'x';
+                    rtb_point_close.addEventListener('click', function() {
+                        gd.stopWindow.close();
+                    });
+                    return rtb_point_close;
+                })());
+                content.appendChild((function() {
+                    var sharp = document.createElement('span');
+                    sharp.className = 'rtb_point_sharp';
+                    return sharp;
+                })());
+                /*content.addEventListener('click', function(e) {
+                    obj.nearBy.hideBusStation();//隐藏周边模块
+                    if(e.target && e.target.className.includes('rtb_point_busLine')) {
+                        obj.line.lineSearch(e.target.title, obj.nearBy.stopInfo.name.match(/[^(]*!/)[0], 1, 2, obj.line.lineSearch_Callback.bind(obj.line), null); //公交线路查询
+                    }//途经公交点击入口
+                });//周边站点点击入口*/
+                return t => {
+                    return () => {
+                        var data = t.getExtData();
+                        var arr =data.address.split(';');
+                        content_title.innerHTML = data.name;
+                        content_content.innerHTML = '途经公交车：' + (function(){var str = "";arr.forEach(function(d){str += ('<a class="rtb_point_busLine" title="' + d + '">' + d + '</a>')});return str})();
+                        gd.stopWindow.setContent(content);
+                        gd.stopWindow.open(gd.map, t.getPosition());
+                        arr.forEach((line) => {
+                            gd.lineSearch(line, 2).then((result) => {
+                                if(result && !result.length) {
+                                    return;
+                                }
+                                this.handle.mergeLineInfo(result[0], BUSTYPE).then(() => {
+                                    this.handle.lineAddHandle(result[0]);
+                                })
+                            })
+                        })
+                    }
+                }
+            })(),
             UI: (() => {
                 var markers;
                 var start;
@@ -170,6 +262,7 @@ export default class RealBus extends Component {
                 var busPolyline;
                 var station;
                 var pois;
+                var nearByStation = [];
                 return {
                     draw: (stop, type, data) => {
                         that.data = data;
@@ -177,6 +270,7 @@ export default class RealBus extends Component {
                             case BUSTYPE:
                                 gd.UI.hideStation();
                                 gd.UI.hidePois();
+                                gd.UI.hideNearByStation();
                                 //绘图--start
                                 if(stop[0] && start) {
                                     start.setPosition(new AMap.LngLat(stop[0].location.lng, stop[0].location.lat));
@@ -323,6 +417,22 @@ export default class RealBus extends Component {
                                 gd.map.setCenter(position);
                                 station = pois = marker;
                                 break;
+                            case NEARBYSTATION:
+                                gd.UI.hideNearByStation();
+                                stop.forEach((item, index) => {
+                                    nearByStation[index] ? (nearByStation[index].setPosition(new AMap.LngLat(item.location.split(',')[0], item.location.split(',')[1])), nearByStation[index].setExtData(item), nearByStation[index].show()) :
+                                        (nearByStation[index] = new AMap.Marker({
+                                            content: '<i class="fa fa-map-marker  fa-2x" style="color: #0f89f5"></i>',
+                                            position: item.location.split(','),
+                                            clickable: true,
+                                            map: gd.map,
+                                            zIndex: 100,
+                                            extData: item,
+                                            bubble: false
+                                        }), nearByStation[index].setMap(gd.map), nearByStation[index].on('click', gd.nearByStationClickHandle(nearByStation[index])));
+                                });
+                                nearByStation[0] && gd.nearByStationClickHandle(nearByStation[0])();
+                                break;
                         }
                     },
                     hideLine: () => {
@@ -338,6 +448,11 @@ export default class RealBus extends Component {
                     },
                     hidePois: () => {
                         pois && pois.hide();
+                    },
+                    hideNearByStation: () => {
+                        nearByStation.forEach((item) => {
+                            item.hide();
+                        });
                     }
                 }
             })()
@@ -354,7 +469,8 @@ export default class RealBus extends Component {
                     }
                 }
                 return collections;
-            })()
+            })(),
+            radius: 500
         };
         this.cache = {
             busline: (() => {
@@ -393,7 +509,7 @@ export default class RealBus extends Component {
                     realTimeBus: [data],
                     realTimeBusHiden: false
                 });
-                data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.stopAt).then((result) => {
+                data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.shiID).then((result) => {
                     data.cars = result.cars;
                     data.current = +new Date();
                     data.realTimeBusMsg = "还有" + result.cars[0].stopdis + "站，" + parseMsToTime(result.cars[0].time) + "后预计到达";
@@ -402,16 +518,37 @@ export default class RealBus extends Component {
                     });
                 })
             },
+            lineAddHandle: (data) => {
+                that.cache.busline[data.busName].every((line) => {return data.id != line.id}) && that.cache.busline[data.busName].push(data);
+                var index = that.cache.busline[data.busName].findIndex((line) => {return line.id == data.id});
+                data = that.cache.busline[data.busName][index];
+                that.setState({
+                    realTimeBus: that.state.realTimeBus.concat(data),
+                    realTimeBusHiden: false
+                });
+                data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.shiID).then((result) => {
+                    data.cars = result.cars;
+                    data.current = +new Date();
+                    data.realTimeBusMsg = "还有" + result.cars[0].stopdis + "站，" + parseMsToTime(result.cars[0].time) + "后预计到达";
+                    that.setState({
+                        realTimeBus: [data]
+                    });
+                })
+            },
             realTimeBusInfoIconUpdate: (index) => {
                 this.state.realTimeBus[index].realTimeBusInfoIcon  = (this.state.realTimeBus[index].realTimeBusInfoIcon == REALBUSICONUP ? REALBUSICONDOWN : REALBUSICONUP);
                 this.setState(this.state);
             },
-            realTimeBusInfoStopAtUpdate: (index, stopId) => {
+            realTimeBusInfoStopAtUpdate: (index, stop) => {
                 var data = this.state.realTimeBus[index];
-                data.stopAt = stopId;
+                data.stopAt = stop.id;
+                data.shiID = stop.shiID;
                 //smy.getArriveBase(that.busName)
                 this.setState(this.state);
-                data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.stopAt).then((result) => {
+                data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.shiID).then((result) => {
+                    if(!result || !result.cars) {
+                        return;
+                    }
                     data.cars = result.cars;
                     data.current = +new Date();
                     data.realTimeBusMsg = realTimeMessage(result.cars[0].stopdis, result.cars[0].time);
@@ -521,6 +658,7 @@ export default class RealBus extends Component {
                             data.via_stops.some((stop) => {
                                 if(stop.id == that.state.realTimeBus[i].stopAt) {
                                     data.stopAt = stop.id;
+                                    data.shiID = stop.shiId;
                                     return true;
                                 }
                                 return false;
@@ -534,7 +672,7 @@ export default class RealBus extends Component {
                     that.setState({
                         realTimeBus: that.state.realTimeBus
                     });
-                    data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.stopAt).then((result) => {
+                    data.stopAt && smy.getArriveBase(data.busName, data.lineId, data.direction, data.shiID).then((result) => {
                         data.cars = result.cars;
                         data.current = +new Date();
                         data.realTimeBusMsg = realTimeMessage(result.cars[0].stopdis, result.cars[0].time);
@@ -607,20 +745,24 @@ export default class RealBus extends Component {
         }
     };
     componentDidUpdate() {
-        clearTimeout(this.updateRealBusTime);
-        this.updateRealBusTime = setTimeout(() => {
-            this.state.realTimeBus.map((item) => {
-                item.cars && item.stopAt && smy.getArriveBase(item.busName, item.lineId, item.direction, item.stopAt).then((result) => {
-                    item.cars = result.cars;
-                    item.current = +new Date();
-                    item.realTimeBusMsg = realTimeMessage(result.cars[0].stopdis, result.cars[0].time);
-                });
+        var that = this;
+        this.state.realTimeBus.every((item) => {
+            item.stopAt && smy.getArriveBase(item.busName, item.lineId, item.direction, item.shiID).then((result) => {
+                if(!result || !result.cars) {
+                    return;
+                }
+                item.cars = result.cars;
+                item.current = +new Date();
+                item.realTimeBusMsg = realTimeMessage(result.cars[0].stopdis, result.cars[0].time);
             });
-            this.setState(this.state);
-        }, 1000);
+        });
     };
     onComplete(info) {
-
+        this.gd.getStops({
+            location: info.position.getLng() + ',' + info.position.getLat()
+        }).then(result => {
+            this.gd.UI.draw(result.pois, NEARBYSTATION, result);
+        });
     };
     onError(info) {
 
@@ -634,7 +776,7 @@ export default class RealBus extends Component {
             <div className="realBusRoot">
                 <Map gd={this.gd} handle={this.handle}></Map>
                 <Header gd={this.gd} handle={this.handle} collectionContent={this.state.collectionContent} cache={this.cache}/>
-                <Footer gd={this.gd} handle={this.handle} realTimeBus={this.state.realTimeBus} realTimeBusHiden={this.state.realTimeBusHiden}/>
+                <Footer radius={this.state.radius} gd={this.gd} handle={this.handle} realTimeBus={this.state.realTimeBus} realTimeBusHiden={this.state.realTimeBusHiden}/>
             </div>
         )
     }

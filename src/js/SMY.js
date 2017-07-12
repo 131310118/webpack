@@ -18,8 +18,8 @@ module.exports = (() => {
                         if (response.status == 200) {
                             return response.json();
                         } else {
-                            //reject();
-                            response = {
+                            reject();
+                            /*response = {
                                 "start_latetime": "23:50",
                                 "line_name": "76",
                                 "end_earlytime": "04:10",
@@ -29,7 +29,7 @@ module.exports = (() => {
                                 "start_stop": "中山北路中潭路",
                                 "end_latetime": "23:10"
                             };
-                            return response;
+                            return response;*/
                         }
                     }).then(response => {
                         cacheBase[bus] = response;
@@ -53,8 +53,8 @@ module.exports = (() => {
                         if (response.status == 200) {
                             return response.json();
                         } else {
-                            //reject();
-                            response = {
+                            reject();
+                            /*response = {
                                 "lineResults1": {
                                     "stops": [{
                                         "id": "1",
@@ -181,7 +181,7 @@ module.exports = (() => {
                                     "direction": "true"
                                 }
                             };
-                            return response;
+                            return response;*/
                         }
                     }).then((response) => {
                         cacheStop[id] = response;
@@ -197,8 +197,8 @@ module.exports = (() => {
         },
         getArriveBase(bus, id, direction, stopId) {
             "use strict";
+            var now = +new Date();
             return new Promise((resolve, reject) => {
-                var now = +new Date();
                 if (!cacheArrive[id] || lastTime + 5000 < now) {
                     lastTime = now;
                     lastUpdateTime = now;
@@ -208,8 +208,8 @@ module.exports = (() => {
                         if (response.status == 200) {
                             return response.json();
                         } else {
-                            //reject();
-                            response = {
+                            reject();
+                           /* response = {
                                 "cars" : [ {
                                     "time" : "192",
                                     "distance" : "933",
@@ -217,11 +217,16 @@ module.exports = (() => {
                                     "stopdis" : "2"
                                 } ]
                             };
-                            return response;
+                            return response;*/
                         }
                     }).then((response) => {
-                        cacheArrive[id] = response;
-                        resolve(response);
+                        if(!response || !response.cars) {
+                            resolve(response);
+                            return;
+                        } else {
+                            cacheArrive[id] = response;
+                            resolve(response);
+                        }
                     }).catch(error => {
                         console.log(error);
                         reject();
