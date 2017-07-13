@@ -137,7 +137,7 @@ var parseMsToTime = function(s){
     if(mi > 0) {
         str += mi + '分';
     }
-    str += s + '秒到达';
+    str += s + '秒';
     return str;
 };
 
